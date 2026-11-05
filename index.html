@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>1マイル単価シミュレーター</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#f6f4ef; --card:#ffffff; --ink:#1d2430; --sub:#5d6675; --line:#e3dfd6;
+    --accent:#0f5ea8; --accent-soft:#e6f0fa; --good:#1f7a4d; --good-soft:#e5f4ec;
+    --warn:#a35a00; --warn-soft:#fbf0e0; --bad:#b3261e; --bad-soft:#fbe8e6;
+    --input:#fbfaf7; --best:#8a4fc7; --best-soft:#f1e8fb;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#14181f; --card:#1c222b; --ink:#e8ebf0; --sub:#9aa3b2; --line:#2e3642;
+      --accent:#6aaef0; --accent-soft:#1d3047; --good:#5cc994; --good-soft:#173528;
+      --warn:#f0b35c; --warn-soft:#3a2c17; --bad:#f08178; --bad-soft:#3d1f1d;
+      --input:#161b22; --best:#c79bf2; --best-soft:#2f2240;
+    }
+  }
+  *{box-sizing:border-box}
+  body{font-variant-numeric:tabular-nums;margin:0;background:var(--bg);color:var(--ink);font-family:"Noto Sans JP",system-ui,sans-serif;font-size:15px;line-height:1.6}
+  .wrap{max-width:920px;margin:0 auto;padding:28px 18px 60px}
+  header h1{font-size:24px;margin:0 0 4px;letter-spacing:.02em}
+  header p{margin:0 0 20px;color:var(--sub);font-size:13.5px}
+  .grid{display:grid;grid-template-columns:1.3fr 1fr;gap:16px;align-items:stretch}
+  @media (max-width:780px){.grid{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}
+  .card h2{font-size:15px;margin:0 0 12px}
+  .hint{color:var(--sub);font-size:12.5px;margin:10px 0 0}
+  label{display:block;font-size:12.5px;color:var(--sub);margin-bottom:4px}
+  input[type=number],input[type=text]{font-variant-numeric:tabular-nums;width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--input);color:var(--ink);font:inherit;font-family:"Noto Sans JP",sans-serif;font-size:14px}
+  input[type=text]{font-family:"Noto Sans JP",sans-serif}
+  input:focus{outline:2px solid var(--accent);outline-offset:-1px;border-color:transparent}
+  .fields{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .fields .full{grid-column:1/-1}
+  .btn{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--ink);font:inherit;font-size:13px;padding:7px 12px;border-radius:8px;cursor:pointer}
+  .btn:hover{border-color:var(--accent);color:var(--accent)}
+  .btn.primary{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.primary:hover{opacity:.9;color:#fff}
+  .row-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+  
+  .big{font-family:"Noto Sans JP",sans-serif;font-size:44px;font-weight:600;letter-spacing:-.01em;line-height:1.1}
+  .big small{font-size:16px;font-family:"Noto Sans JP",sans-serif;color:var(--sub);font-weight:500;margin-left:4px}
+  .badge{display:inline-block;font-size:12.5px;font-weight:700;padding:3px 10px;border-radius:999px;margin-top:8px}
+  .b-good{background:var(--good-soft);color:var(--good)}
+  .b-warn{background:var(--warn-soft);color:var(--warn)}
+  .b-bad{background:var(--bad-soft);color:var(--bad)}
+  .b-best{background:var(--best-soft);color:var(--best)}
+  .b-acc{background:var(--accent-soft);color:var(--accent)}
+  dl.kv{display:grid;grid-template-columns:1fr auto;gap:6px 12px;margin:16px 0 0;font-size:13.5px}
+  dl.kv dt{color:var(--sub)}
+  dl.kv dd{margin:0;text-align:right;font-family:"Noto Sans JP",sans-serif}
+  dl.kv .sep{grid-column:1/-1;border-top:1px dashed var(--line);margin:4px 0}
+  .scale{margin-top:16px}
+  .scale-bar{position:relative;height:10px;border-radius:5px;background:linear-gradient(90deg,var(--bad-soft) 0 25%,var(--warn-soft) 25% 50%,var(--good-soft) 50% 75%,var(--best-soft) 75% 100%);border:1px solid var(--line)}
+  .scale-mark{position:absolute;top:-5px;width:4px;height:18px;border-radius:2px;background:var(--ink);transform:translateX(-2px);transition:left .25s}
+  .scale-labels{display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin-top:4px;font-family:"Noto Sans JP",sans-serif}
+  .check{display:flex;gap:8px;align-items:flex-start;font-size:13.5px;color:var(--ink);margin:14px 0 6px}
+  .check input{margin-top:4px}
+  .lost{display:none}
+  .lost.on{display:grid}
+  .note{font-size:12.5px;color:var(--sub);margin-top:14px;line-height:1.7}
+  .list{margin-top:16px}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{padding:8px 6px;border-bottom:1px solid var(--line);text-align:right;vertical-align:middle}
+  th:first-child,td:first-child{text-align:left}
+  th{font-weight:500;color:var(--sub);font-size:12.5px}
+  td{font-family:"Noto Sans JP",sans-serif}
+  td:first-child{font-family:"Noto Sans JP",sans-serif}
+  td.v{font-weight:600}
+  .x{appearance:none;border:0;background:none;color:var(--sub);cursor:pointer;font-size:15px;padding:2px 6px}
+  .x:hover{color:var(--bad)}
+  .empty{color:var(--sub);font-size:13px;padding:6px 0}
+  .best{font-size:11px;font-weight:700;color:var(--good);background:var(--good-soft);border-radius:999px;padding:1px 7px;margin-left:6px;font-family:"Noto Sans JP",sans-serif}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>1マイル単価シミュレーター</h1>
+    <p>特典航空券を利用する際、1マイルが何円相当になるかを算出できるシミュレーターです。比較リストに複数追加すると、並べて比較検討できます。</p>
+  </header>
+
+  <div class="grid">
+      <div class="card">
+        <div class="fields">
+          <div class="full"><label>比較用タイトル</label><input type="text" id="name" placeholder="例：東京→ホノルル ビジネス 往復"></div>
+          <div><label>必要マイル</label><input type="number" id="miles" min="0" step="500" value="" placeholder="0"></div>
+          <div><label>特典時の燃油サーチャージ/諸税（円）</label><input type="number" id="tax" min="0" step="100" value="" placeholder="0"></div>
+          <div class="full"><label>同じ便を有償で買うと（円）</label><input type="number" id="fare" min="0" step="100" value="" placeholder="0"></div>
+        </div>
+        <div class="row-actions">
+          <button class="btn primary" id="addList">比較リストに追加</button>
+          <button class="btn" id="clear">クリア</button>
+        </div>
+        <p class="hint">マイル価値 ＝（有償運賃 − 特典時の燃油サーチャージ/諸税）÷ 必要マイル</p>
+      </div>
+
+
+    <div class="card result">
+      <h2>1マイルあたりの価値</h2>
+      <div class="big" id="unit">—<small>円/マイル</small></div>
+      <div id="badge"></div>
+      <div class="scale">
+        <div class="scale-bar"><div class="scale-mark" id="mark" style="left:0%"></div></div>
+        <div class="scale-labels"><span>0</span><span>1</span><span>3</span><span>5</span><span>10円+</span></div>
+      </div>
+      <dl class="kv">
+        <dt>有償運賃</dt><dd id="oFare">—</dd>
+        <dt>特典時の自己負担</dt><dd id="oTax">—</dd>
+        <div class="sep"></div>
+        <dt><b>浮いた金額</b></dt><dd id="oSaved"><b>—</b></dd>
+        <dt>1万マイルあたり</dt><dd id="o10k">—</dd>
+      </dl>
+      <p class="note"><b>【マイル価値の判断目安】</b><br>1円未満：割に合わない<br>1〜2円：標準的<br>3〜4円：お得<br>5〜9円：かなりお得<br>10円以上：最高！</p>
+    </div>
+  </div>
+
+  <div class="card list">
+    <h2>比較リスト</h2>
+    <div id="listBox"></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  const $ = id => document.getElementById(id);
+  const num = v => { const n = parseFloat(v); return isFinite(n) ? n : 0; };
+  const yen = n => isFinite(n) ? Math.round(n).toLocaleString('ja-JP') + ' 円' : '—';
+  const fx  = (n,d=2) => isFinite(n) ? n.toLocaleString('ja-JP',{minimumFractionDigits:d,maximumFractionDigits:d}) : '—';
+  const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+  const KEY = 'mile-burn-sim-v1';
+  const fields = ['name','miles','tax','fare'];
+
+  let state = {name:'', miles:0, tax:0, fare:0, useLost:false, lostMiles:0, lostVal:1.5, list:[]};
+  try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s) state = Object.assign(state, s); } catch(e){}
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch(e){} };
+
+  const compute = s => {
+    const miles = num(s.miles), tax = num(s.tax), fare = num(s.fare);
+    const lost = 0;
+    const saved = fare - tax - lost;
+    const unit = miles > 0 && fare > 0 ? saved / miles : NaN;
+    return {miles, tax, fare, lost, saved, unit};
+  };
+  const grade = u => !isFinite(u) ? null
+    : u >= 10 ? ['b-best','最高！'] : u >= 5 ? ['b-good','かなりお得'] : u >= 3 ? ['b-good','お得']
+    : u >= 1 ? ['b-warn','標準的'] : ['b-bad','割に合わない'];
+  const color = u => u >= 10 ? 'var(--best)' : u >= 3 ? 'var(--good)' : u >= 1 ? 'var(--warn)' : 'var(--bad)';
+  // scale: 0-1, 1-3, 3-5, 5-10 each take 25% of the bar
+  const pos = u => { if (!isFinite(u) || u <= 0) return 0; const st=[0,1,3,5,10];
+    for (let i=0;i<4;i++) if (u < st[i+1]) return (i + (u-st[i])/(st[i+1]-st[i])) * 25; return 100; };
+
+  function render(){
+    const r = compute(state);
+    $('unit').innerHTML = (isFinite(r.unit) ? fx(r.unit) : '—') + '<small>円/マイル</small>';
+    const g = grade(r.unit);
+    $('badge').innerHTML = g ? `<span class="badge ${g[0]}">${g[1]}</span>` : '<span class="badge b-acc">必要マイルと有償運賃を入力してください</span>';
+    $('mark').style.left = pos(r.unit) + '%';
+    $('oFare').textContent = r.fare ? yen(r.fare) : '—';
+    $('oTax').textContent = r.fare ? yen(r.tax) : '—';
+    $('oSaved').innerHTML = '<b>' + (r.fare ? yen(r.saved) : '—') + '</b>';
+    $('o10k').textContent = isFinite(r.unit) ? yen(r.unit * 10000) : '—';
+    renderList();
+    save();
+  }
+
+  function renderList(){
+    const box = $('listBox');
+    if (!state.list.length){ box.innerHTML = '<div class="empty">候補を追加すると、ここで価値の高い順に並べて比べられます。</div>'; return; }
+    const rows = state.list.map((s,i)=>({s, i, r: compute(s)})).sort((a,b)=>(b.r.unit||-1e9)-(a.r.unit||-1e9));
+    box.innerHTML = `<table><thead><tr><th>候補</th><th>必要マイル</th><th>浮いた金額</th><th>円/マイル</th><th></th></tr></thead><tbody>${
+      rows.map((x,k)=>`<tr>
+        <td>${esc(x.s.name || '（無題）')}${k===0 && rows.length>1 ? '<span class="best">最高</span>' : ''}</td>
+        <td>${x.r.miles.toLocaleString('ja-JP')}</td>
+        <td>${yen(x.r.saved)}</td>
+        <td class="v" style="color:${color(x.r.unit)}">${fx(x.r.unit)}</td>
+        <td><button class="x" data-i="${x.i}" title="削除" aria-label="削除">×</button></td>
+      </tr>`).join('')}</tbody></table>`;
+    box.querySelectorAll('.x').forEach(b => b.onclick = () => { state.list.splice(+b.dataset.i, 1); render(); });
+  }
+
+  const show = v => (v === 0 || v === '0') ? '' : v;
+  fields.forEach(k => {
+    const el = $(k); el.value = show(state[k]);
+    el.addEventListener('focus', () => { if (el.value === '0') el.value = ''; });
+    el.addEventListener('input', () => { state[k] = el.value; render(); });
+  });
+
+  $('clear').onclick = () => {
+    Object.assign(state, {name:'', miles:'', tax:'', fare:''});
+    fields.forEach(k => $(k).value = show(state[k])); render();
+  };
+  $('addList').onclick = () => {
+    const r = compute(state);
+    if (!isFinite(r.unit)) { $('badge').innerHTML = '<span class="badge b-bad">必要マイルと有償運賃を入れてから追加してください</span>'; return; }
+    state.list.push({name:state.name, miles:state.miles, tax:state.tax, fare:state.fare});
+    render();
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>
