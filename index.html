@@ -172,7 +172,7 @@
 
   function renderList(){
     const box = $('listBox');
-    if (!state.list.length){ box.innerHTML = '<div class="empty">候補を追加すると、ここで価値の高い順に並べて比べられます。</div>'; return; }
+    if (!state.list.length){ box.innerHTML = '<div class="empty">候補の特典航空券を「比較リスト」に追加すると、こちらで比較することが可能です。</div>'; return; }
     const rows = state.list.map((s,i)=>({s, i, r: compute(s)})).sort((a,b)=>(b.r.unit||-1e9)-(a.r.unit||-1e9));
     box.innerHTML = `<table><thead><tr><th>候補</th><th>必要マイル</th><th>浮いた金額</th><th>円/マイル</th><th></th></tr></thead><tbody>${
       rows.map((x,k)=>`<tr>
